@@ -1,0 +1,4 @@
+name = 'D7 Ajax Test'
+description = 'Explore D& Ajax.'
+package = Custom
+core = 7.x

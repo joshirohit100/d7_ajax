@@ -1,0 +1,102 @@
+<?php
+
+/**
+ * @file
+ * Module file for explore D7 Ajax.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function d7_ajax_menu() {
+  $items = array();
+  $items['d7-ajax-add-remove'] = array(
+    'title' => 'Ajax Add/Remove',
+    'page callback' => '_d7_ajax_add_remove',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+function _d7_ajax_add_remove() {
+  $form = drupal_get_form('ajax_add_remove_form');
+  return drupal_render($form);
+}
+
+/**
+ * Form with ajax Add/Remove functionality.
+ */
+function ajax_add_remove_form($form, &$form_state) {
+  // Array stores the index/delta.
+  $form_state['storage']['index_array'] = isset($form_state['storage']['index_array']) ? $form_state['storage']['index_array'] : array(0);
+
+  // If button is clicked.
+  if (isset($form_state['triggering_element'])) {
+    $action = $form_state['clicked_button']['#action_type'];
+    switch ($action) {
+      case 'add':
+        $form_state['storage']['index_array'][] = max($form_state['storage']['index_array']) + 1;
+        break;
+      case 'remove':
+        $index_position = $form_state['clicked_button']['#index_position'];
+        unset($form_state['storage']['index_array'][array_search($index_position, $form_state['storage']['index_array'])]);
+        break;
+    }
+  }
+  $form['my-fieldset'] = array(
+    '#type' => 'fieldset',
+    '#tree' => TRUE,
+    '#title' => t('My Fieldset'),
+    '#prefix' => '<div id="my-fieldset-wrapper">',
+    '#suffix' => '</div>',
+  );
+  foreach ($form_state['storage']['index_array'] as $key => $val) {
+    $form['my-fieldset'][$val]['text'] = array(
+      '#type' => 'textfield',
+      '#title' => t('My Name'),
+    );
+    if (count($form_state['storage']['index_array']) > 1) {
+      $form['my-fieldset'][$val]['remove'] = array(
+        '#type' => 'button',
+        '#value' => t('Remove_@val', array('@val' => $val)),
+        '#ajax' => array(
+          'callback' => '_d7_ajax_ajax_add_remove_callback',
+          'wrapper' => 'my-fieldset-wrapper',
+        ),
+        '#action_type' => 'remove',
+        '#index_position' => $val,
+      );
+    }
+  }
+  $form['my-fieldset']['add'] = array(
+    '#type' => 'button',
+    '#value' => t('Add another'),
+    '#ajax' => array(
+      'callback' => '_d7_ajax_ajax_add_remove_callback',
+      'wrapper' => 'my-fieldset-wrapper',
+     ),
+    '#action_type' => 'add',
+  );
+
+  $form['submit'] = array(
+    '#value' => t('Save'),
+    '#type' => 'submit',
+  );
+
+  return $form;
+}
+
+/**
+ * Ajax callback wrapper for the for add/remove.
+ */
+function _d7_ajax_ajax_add_remove_callback($form, $form_state) {
+  return $form['my-fieldset'];
+}
+
+/**
+ * Submit handler for the ajax_add_remove_form.
+ */
+function ajax_add_remove_form_submit($form, &$form_state) {
+  drupal_set_message(t('Saved. Thankyou!'));
+}
