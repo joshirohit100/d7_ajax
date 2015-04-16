@@ -100,3 +100,59 @@ function _d7_ajax_ajax_add_remove_callback($form, $form_state) {
 function ajax_add_remove_form_submit($form, &$form_state) {
   drupal_set_message(t('Saved. Thankyou!'));
 }
+
+/**
+ * Form to ajaxify state based on country.
+ */
+function _d7_ajax_country_state_form($form, &$form_state) {
+  $country_state = _d7_get_state_country();
+  $states = array();
+  if (isset($form_state['values']['country'])) {
+    $states = $country_state[$form_state['values']['country']];
+  }
+  $form['country'] = array(
+    '#type' => 'select',
+    '#title' => t('Country'),
+    '#options' => drupal_map_assoc(array_keys($country_state)),
+    '#ajax' => array(
+      'callback' => '_d7_state_country_ajax_callback',
+      'wrapper' => 'my-states',
+    ),
+  );
+  $form['state'] = array(
+    '#type' => 'select',
+    '#title' => t('State'),
+    '#options' => $states,
+    '#prefix' => '<div id="my-states">',
+    '#suffix' => '</div>',
+  );
+  return $form;
+}
+
+/**
+ * Ajax wrapper for the country / state form.
+ */
+function _d7_state_country_ajax_callback($form, $form_state) {
+  return $form['state'];
+}
+
+/**
+ * Get List of countries and their states.
+ * @return type array
+ */
+function _d7_get_state_country() {
+  return array(
+    '1' => array(
+      'state-1' => 'State 1',
+      'state-2' => 'State 2',
+    ),
+    '2' => array(
+      'state-3' => 'State 3',
+      'state-4' => 'State 4',
+    ),
+    '3' => array(
+      'state-5' => 'State 5',
+      'state-6' => 'State 6',
+    ),
+  );
+}
