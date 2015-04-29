@@ -27,6 +27,8 @@ function body_absolute_urls_form_field_ui_field_edit_form_alter(&$form, &$form_s
  */
 function body_absolute_urls_node_validate($node, $form, &$form_state) {
   global $base_url;
+  $url_components = parse_url($base_url);
+  $site_url = $url_components['host'] . $url_components['path'];
   $absolute_url_present = FALSE;
   $text = $form_state['values']['body']['und'][0]['value'];
   $ref_pattern = '/(?<=href=\").+(?=\")/';
@@ -36,7 +38,7 @@ function body_absolute_urls_node_validate($node, $form, &$form_state) {
     foreach ($matches as $match) {
 
       // If absolute url is the site's url.
-      if (strpos($match, $base_url) !== FALSE) {
+      if (strpos($match, $site_url) !== FALSE) {
         $absolute_url_present = TRUE;
         break;
       }
