@@ -6,15 +6,27 @@
  */
 
 /**
- * Implements hook_init().
+ * Implements hook_form_FORM_ID_alter().
+ * for 'field_ui_field_edit_form' form.
  */
-function body_absolute_urls_init() {
+function body_absolute_urls_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
+
+  // Only for textareas.
+  if ($form['#field']['type'] == 'text_long') {
+    $default_value = isset($form['#field']['absolute_url_check']) ? $form['#field']['absolute_url_check'] : 0;
+    $form['field']['absolute_url_check'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Check for absolute urls'),
+      '#default_value' => $default_value,
+    );
+  }
 }
 
 /**
  * Implements hook_node_validate().
  */
 function body_absolute_urls_node_validate($node, $form, &$form_state) {
+  global $base_url;
   $body_text = $form_state['values']['body']['und'][0]['value'];
   $pattern = "/(http|https|ftp|ftps)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\/\S*)?/";
 
@@ -43,5 +55,15 @@ function body_absolute_urls_node_validate($node, $form, &$form_state) {
     if ($absolute_url_present) {
       form_set_error('body', t('There is an absolute url present in the body.'));
     }
+  }
+}
+
+/**
+ * Implements hook_preprocess_links().
+ */
+function body_absolute_urls_preprocess_links(&$variables) {
+  foreach ($variables['links'] as &$link) {
+    $link['attributes']['class'][] = 'ajax-link';
+    $link['attributes']['rel'] = '#content';
   }
 }
