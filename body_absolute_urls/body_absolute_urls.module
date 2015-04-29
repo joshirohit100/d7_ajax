@@ -12,7 +12,7 @@
 function body_absolute_urls_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
 
   // Only for textareas.
-  if ($form['#field']['type'] == 'text_long') {
+  if ($form['#instance']['widget']['type'] == 'text_textarea') {
     $default_value = isset($form['#field']['absolute_url_check']) ? $form['#field']['absolute_url_check'] : 0;
     $form['field']['absolute_url_check'] = array(
       '#type' => 'checkbox',
@@ -27,34 +27,24 @@ function body_absolute_urls_form_field_ui_field_edit_form_alter(&$form, &$form_s
  */
 function body_absolute_urls_node_validate($node, $form, &$form_state) {
   global $base_url;
-  $body_text = $form_state['values']['body']['und'][0]['value'];
-  $pattern = "/(http|https|ftp|ftps)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\/\S*)?/";
+  $absolute_url_present = FALSE;
+  $text = $form_state['values']['body']['und'][0]['value'];
+  $ref_pattern = '/(?<=href=\").+(?=\")/';
+  //$ref_pattern = '/href=["\']?([^"\'>]+)["\']?/';
+  if (preg_match($ref_pattern, $text, $matches)) {
+    // If there are some links in the text.
+    foreach ($matches as $match) {
 
-  // If there is some text on in body field.
-  if (!empty($body_text)) {
-
-    $absolute_url_present = FALSE;
-
-    // DOM Parser way.
-    $dom = new DOMDocument();
-    $dom->loadHTML($body_text);
-    $urls = $dom->getElementsByTagName('a');
-
-    // If there is an anchor tag in the text.
-    if ($urls->length > 0) {
-      foreach ($urls as $url) {
-        $href = $url->getAttribute('href');
-        // Check if href is absolute.
-        if(valid_url($href, TRUE)) {
-          $absolute_url_present = TRUE;
-          break;
-        }
+      // If absolute url is the site's url.
+      if (strpos($match, $base_url) !== FALSE) {
+        $absolute_url_present = TRUE;
+        break;
       }
     }
+  }
 
-    if ($absolute_url_present) {
-      form_set_error('body', t('There is an absolute url present in the body.'));
-    }
+  if ($absolute_url_present) {
+    form_set_error('body', t('There is an absolute url present in the body.'));
   }
 }
 
