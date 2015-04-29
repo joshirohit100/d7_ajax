@@ -1,0 +1,4 @@
+name = 'Body Absolute Urls'
+description = 'Check for absolute urls in body field.'
+core = 7.x
+scripts[] = js/body_absolute_urls.js

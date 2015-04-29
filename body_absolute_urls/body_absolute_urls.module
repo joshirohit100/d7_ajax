@@ -1,0 +1,47 @@
+<?php
+
+/**
+ * @file
+ * Module file contains hooks and other stuff.
+ */
+
+/**
+ * Implements hook_init().
+ */
+function body_absolute_urls_init() {
+}
+
+/**
+ * Implements hook_node_validate().
+ */
+function body_absolute_urls_node_validate($node, $form, &$form_state) {
+  $body_text = $form_state['values']['body']['und'][0]['value'];
+  $pattern = "/(http|https|ftp|ftps)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\/\S*)?/";
+
+  // If there is some text on in body field.
+  if (!empty($body_text)) {
+
+    $absolute_url_present = FALSE;
+
+    // DOM Parser way.
+    $dom = new DOMDocument();
+    $dom->loadHTML($body_text);
+    $urls = $dom->getElementsByTagName('a');
+
+    // If there is an anchor tag in the text.
+    if ($urls->length > 0) {
+      foreach ($urls as $url) {
+        $href = $url->getAttribute('href');
+        // Check if href is absolute.
+        if(valid_url($href, TRUE)) {
+          $absolute_url_present = TRUE;
+          break;
+        }
+      }
+    }
+
+    if ($absolute_url_present) {
+      form_set_error('body', t('There is an absolute url present in the body.'));
+    }
+  }
+}
