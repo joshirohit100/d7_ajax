@@ -29,15 +29,18 @@ function body_absolute_urls_node_validate($node, $form, &$form_state) {
   global $base_url;
   $url_components = parse_url($base_url);
   $site_url = $url_components['host'] . $url_components['path'];
+
   $absolute_url_present = FALSE;
   $text = $form_state['values']['body']['und'][0]['value'];
   $ref_pattern = '/(?<=href=\").+(?=\")/';
   //$ref_pattern = '/href=["\']?([^"\'>]+)["\']?/';
+
+  // Check for the anchor tag pattern in text.
   if (preg_match($ref_pattern, $text, $matches)) {
     // If there are some links in the text.
     foreach ($matches as $match) {
 
-      // If absolute url is the site's url.
+      // If absolute url contains the site's url.
       if (strpos($match, $site_url) !== FALSE) {
         $absolute_url_present = TRUE;
         break;
@@ -45,6 +48,7 @@ function body_absolute_urls_node_validate($node, $form, &$form_state) {
     }
   }
 
+  // If absolute url is present in text.
   if ($absolute_url_present) {
     form_set_error('body', t('There is an absolute url present in the body.'));
   }
