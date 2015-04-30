@@ -68,9 +68,8 @@ function body_absolute_urls_preprocess_links(&$variables) {
 
 /**
  * Method to check whether passed url contains the site url or not.
- * @param type $match
- * @return bool
- *  If matches return true, false otherwise.
+ * @param string $match The string in which to check the site url.
+ * @return bool If matches return true, false otherwise.
  */
 function _body_abdolute_url_match_site_url($match) {
   global $base_url;
