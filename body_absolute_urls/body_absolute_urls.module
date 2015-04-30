@@ -29,9 +29,9 @@ function body_absolute_urls_form_field_ui_field_edit_form_alter(&$form, &$form_s
 function body_absolute_urls_node_validate($node, $form, &$form_state) {
   // Get name of those fields whose marked for absolute url check.
   foreach ($form_state['field'] as $field_name => $val) {
-    if (isset($val['und']['field']['absolute_url_check']) && $val['und']['field']['absolute_url_check'] == 1) {
+    if (isset($val[LANGUAGE_NONE]['field']['absolute_url_check']) && $val[LANGUAGE_NONE]['field']['absolute_url_check'] == 1) {
 
-      foreach ($form_state['values'][$field_name]['und'] as $key => $value) {
+      foreach ($form_state['values'][$field_name][LANGUAGE_NONE] as $key => $value) {
         if (is_numeric($key)) {
           $text = $value['value'];
           $ref_pattern = '/(?<=href=\").+(?=\")/';
