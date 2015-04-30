@@ -43,7 +43,9 @@ function body_absolute_urls_node_validate($node, $form, &$form_state) {
 
               // If absolute url contains the site's url.
               if (_body_abdolute_url_match_site_url($match)) {
-                form_set_error($field_name, t('There is an absolute url present in the @field_name.', array('@field_name' => $field_name)));
+                $field_label = $val['und']['instance']['label'];
+                $field_delta_name = $field_name . '][' . LANGUAGE_NONE . '][' . $key;
+                form_set_error($field_delta_name, t('There is an absolute url present in the field @field_name.', array('@field_name' => $field_label)));
                 break;
               }
             }
