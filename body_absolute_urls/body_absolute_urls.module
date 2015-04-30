@@ -10,9 +10,10 @@
  * for 'field_ui_field_edit_form' form.
  */
 function body_absolute_urls_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
-
+  // Fields for which absolute url needs to be enabled.
+  $types_check = array('text_textarea_with_summary', 'text_textarea');
   // Only for textareas.
-  if ($form['#instance']['widget']['type'] == 'text_textarea') {
+  if (in_array($form['#instance']['widget']['type'], $types_check)) {
     $default_value = isset($form['#field']['absolute_url_check']) ? $form['#field']['absolute_url_check'] : 0;
     $form['field']['absolute_url_check'] = array(
       '#type' => 'checkbox',
@@ -26,31 +27,30 @@ function body_absolute_urls_form_field_ui_field_edit_form_alter(&$form, &$form_s
  * Implements hook_node_validate().
  */
 function body_absolute_urls_node_validate($node, $form, &$form_state) {
-  global $base_url;
-  $url_components = parse_url($base_url);
-  $site_url = $url_components['host'] . $url_components['path'];
+  // Get name of those fields whose marked for absolute url check.
+  foreach ($form_state['field'] as $field_name => $val) {
+    if (isset($val['und']['field']['absolute_url_check']) && $val['und']['field']['absolute_url_check'] == 1) {
 
-  $absolute_url_present = FALSE;
-  $text = $form_state['values']['body']['und'][0]['value'];
-  $ref_pattern = '/(?<=href=\").+(?=\")/';
-  //$ref_pattern = '/href=["\']?([^"\'>]+)["\']?/';
+      foreach ($form_state['values'][$field_name]['und'] as $key => $value) {
+        if (is_numeric($key)) {
+          $text = $value['value'];
+          $ref_pattern = '/(?<=href=\").+(?=\")/';
 
-  // Check for the anchor tag pattern in text.
-  if (preg_match($ref_pattern, $text, $matches)) {
-    // If there are some links in the text.
-    foreach ($matches as $match) {
+          // Check for the anchor tag pattern in text.
+          if (preg_match($ref_pattern, $text, $matches)) {
+            // If there are some links in the text.
+            foreach ($matches as $match) {
 
-      // If absolute url contains the site's url.
-      if (strpos($match, $site_url) !== FALSE) {
-        $absolute_url_present = TRUE;
-        break;
+              // If absolute url contains the site's url.
+              if (_body_abdolute_url_match_site_url($match)) {
+                form_set_error($field_name, t('There is an absolute url present in the @field_name.', array('@field_name' => $field_name)));
+                break;
+              }
+            }
+          }
+        }
       }
     }
-  }
-
-  // If absolute url is present in text.
-  if ($absolute_url_present) {
-    form_set_error('body', t('There is an absolute url present in the body.'));
   }
 }
 
@@ -59,7 +59,27 @@ function body_absolute_urls_node_validate($node, $form, &$form_state) {
  */
 function body_absolute_urls_preprocess_links(&$variables) {
   foreach ($variables['links'] as &$link) {
-    $link['attributes']['class'][] = 'ajax-link';
-    $link['attributes']['rel'] = '#content';
+    //$link['attributes']['class'][] = 'ajax-link';
+    //$link['attributes']['rel'] = '#content';
   }
+}
+
+/**
+ * Method to check whether passed url contains the site url or not.
+ * @param type $match
+ * @return bool
+ *  If matches return true, false otherwise.
+ */
+function _body_abdolute_url_match_site_url($match) {
+  global $base_url;
+
+  // Get the base url of site (removing https, other protocals).
+  $url_components = parse_url($base_url);
+  $site_url = $url_components['host'] . $url_components['path'];
+
+  // Check if string contains the site url in it.
+  if (strpos($match, $site_url) !== FALSE) {
+    return TRUE;
+  }
+  return FALSE;
 }
