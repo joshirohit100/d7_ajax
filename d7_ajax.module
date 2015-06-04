@@ -16,6 +16,12 @@ function d7_ajax_menu() {
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
   );
+  $items['d7-ajax-my_form'] = array(
+    'title' => 'Ajax',
+    'page callback' => '_d7_ajax_my_form',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
   return $items;
 }
 
@@ -102,6 +108,28 @@ function ajax_add_remove_form_submit($form, &$form_state) {
 }
 
 /**
+ * Hook Menu callback.
+ */
+function _d7_ajax_my_form() {
+  $args = arg();
+  if (!empty($args[1])) {
+    ctools_include('ajax');
+    ctools_include('modal');
+    $form_state = array(
+      'title' => t('Ajax'),
+      'ajax' => TRUE,
+    );
+    $output = ctools_modal_form_wrapper('_d7_ajax_country_state_form', $form_state);
+    print ajax_render($output);
+    exit;
+  }
+  else {
+    $form = drupal_get_form('_d7_ajax_country_state_form');
+    return drupal_render($form);
+  }
+}
+
+/**
  * Form to ajaxify state based on country.
  */
 function _d7_ajax_country_state_form($form, &$form_state) {
@@ -125,6 +153,14 @@ function _d7_ajax_country_state_form($form, &$form_state) {
     '#options' => $states,
     '#prefix' => '<div id="my-states">',
     '#suffix' => '</div>',
+  );
+
+  ctools_include('modal');
+  ctools_include('ajax');
+  ctools_modal_add_js();
+  $form['link'] = array(
+    '#type' => 'markup',
+    '#markup' => '<div>' . ctools_modal_text_button(t('Click Here'), 'd7-ajax-my_form/ctools', 'click') . '</div>',
   );
   return $form;
 }
