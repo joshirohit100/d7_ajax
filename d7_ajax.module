@@ -192,3 +192,13 @@ function _d7_get_state_country() {
     ),
   );
 }
+
+/**
+ * Implements hook_views_api().
+ */
+function d7_ajax_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'd7_ajax') . '/views',
+  );
+}
