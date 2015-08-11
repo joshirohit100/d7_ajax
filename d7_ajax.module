@@ -22,6 +22,12 @@ function d7_ajax_menu() {
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
   );
+  $items['d7-ajax-multiselect-form'] = array(
+    'title' => 'Ajax',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('_d7_ajax_multiselect_form'),
+    'access callback' => TRUE,
+  );
   return $items;
 }
 
@@ -201,4 +207,46 @@ function d7_ajax_views_api() {
     'api' => 3,
     'path' => drupal_get_path('module', 'd7_ajax') . '/views',
   );
+}
+
+/**
+ * Ajax form example for multiselect dependant select list.
+ */
+function _d7_ajax_multiselect_form($form, $form_state) {
+  $form['country'] = array(
+    '#type' => 'select',
+    '#title' => t('Country'),
+    '#multiple' => TRUE,
+    '#options' => array('ind' => t('India'), 'usa' => t('America')),
+    '#ajax' => array(
+      'callback' => '_d7_multiselect_ajax_callback',
+      'wrapper' => 'my-state',
+    ),
+  );
+
+  $states = array();
+  if (isset($form_state['values'])) {
+    $country = $form_state['values']['country'];
+    if (isset($country['ind'])) {
+      $states += array('del' => t('Delhi'), 'mum' => t('Mumbai'));
+    }
+    if (isset($country['usa'])) {
+      $states += array('ny' => t('New York'), 'az' => t('Arizona'));
+    }
+  }
+  $form['state'] = array(
+    '#type' => 'select',
+    '#title' => t('State'),
+    '#options' => $states,
+    '#prefix' => '<div id="my-state">',
+    '#suffix' => '</div>',
+  );
+  return $form;
+}
+
+/**
+ * Ajax callback for the _d7_ajax_multiselect_form form.
+ */
+function _d7_multiselect_ajax_callback($form, $form_state) {
+  return $form['state'];
 }
