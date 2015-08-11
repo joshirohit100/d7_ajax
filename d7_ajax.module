@@ -213,6 +213,11 @@ function d7_ajax_views_api() {
  * Ajax form example for multiselect dependant select list.
  */
 function _d7_ajax_multiselect_form($form, $form_state) {
+  $form['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Name'),
+    '#required' => TRUE,
+  );
   $form['country'] = array(
     '#type' => 'select',
     '#title' => t('Country'),
@@ -241,6 +246,11 @@ function _d7_ajax_multiselect_form($form, $form_state) {
     '#prefix' => '<div id="my-state">',
     '#suffix' => '</div>',
   );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+  );
+
   return $form;
 }
 
